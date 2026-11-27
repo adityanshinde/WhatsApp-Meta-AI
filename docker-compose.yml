@@ -1,0 +1,14 @@
+services:
+  wa-meta-ai:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.example
+    environment:
+      - WA_HOST=0.0.0.0
+      - WA_HEADLESS=true
+    volumes:
+      - ./wa_profile:/app/wa_profile
+      - ./downloads:/app/downloads
+    restart: unless-stopped

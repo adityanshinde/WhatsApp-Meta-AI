@@ -1,0 +1,13 @@
+wa_profile/
+downloads/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.env
+urls.txt
+qr_test.png
+dist/
+build/
+tests/final_test_with_ref_image/output/
+
