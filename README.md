@@ -14,6 +14,10 @@ An open-source **REST API, CLI, Python SDK, and MCP server** for two-way interac
 
 > **Disclaimer:** Uses Playwright to automate official WhatsApp Web in Chromium. Use responsibly with built-in cooldown/jitter (`WA_COOLDOWN_SEC`, `WA_JITTER_SEC`) and preferably on a secondary WhatsApp number.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="wa-meta-ai demo" width="840">
+</p>
+
 ---
 
 ## Why This Exists
