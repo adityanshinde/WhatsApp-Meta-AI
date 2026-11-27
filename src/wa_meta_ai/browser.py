@@ -55,7 +55,7 @@ LAST_INCOMING_TEXT_JS = """
 () => {
     const main = document.querySelector('#main');
     if (!main) return '';
-    const msgs = [...main.querySelectorAll('.message-in')];
+    const msgs = [...main.querySelectorAll('.message-in, [data-id^="false_"]')];
     if (!msgs.length) return '';
     const last = msgs[msgs.length - 1];
     const spans = [...last.querySelectorAll('span.selectable-text')];
@@ -66,7 +66,7 @@ LAST_INCOMING_TEXT_JS = """
 COUNT_INCOMING_MSGS_JS = """
 () => {
     const main = document.querySelector('#main');
-    return main ? main.querySelectorAll('.message-in').length : 0;
+    return main ? main.querySelectorAll('.message-in, [data-id^="false_"]').length : 0;
 }
 """
 
@@ -384,6 +384,7 @@ class WhatsAppBrowser:
         self._last_prompt_ts = time.monotonic()
 
         new_items: list[dict[str, Any]] = []
+        last_msg_count = before_msgs
         last_change = time.monotonic()
         saw_reply = False
 
@@ -393,11 +394,13 @@ class WhatsAppBrowser:
             cur_media = await page.evaluate(COLLECT_CHAT_MEDIA_JS, media_opts)
             fresh = [m for m in cur_media if m["src"] not in before_urls]
 
-            if cur_msgs > before_msgs or len(fresh) != len(new_items):
+            wait_window = settle_sec if new_items else max(settle_sec, 7.0)
+            if cur_msgs != last_msg_count or len(fresh) != len(new_items):
                 saw_reply = True
+                last_msg_count = cur_msgs
                 new_items = fresh
                 last_change = time.monotonic()
-            elif saw_reply and (time.monotonic() - last_change) >= settle_sec:
+            elif saw_reply and (time.monotonic() - last_change) >= wait_window:
                 if all(m.get("complete", True) for m in new_items):
                     break
 
