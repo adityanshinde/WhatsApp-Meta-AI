@@ -36,8 +36,15 @@ async def _run_once(args: argparse.Namespace) -> int:
     await browser.start()
     try:
         if await browser.auth_status() != "READY":
-            print("WhatsApp Web is not logged in. Scan QR in the browser window, then press ENTER...")
-            input()
+            print("WhatsApp Web is not logged in. Scan the QR in the browser window, then press ENTER...")
+            if sys.stdin.isatty():
+                input()
+            else:
+                raise SystemExit(
+                    "Not logged in and no interactive terminal to confirm. "
+                    "Run `wa-meta-ai login`-style setup headful so you can scan the QR, "
+                    "or set WA_PROFILE_DIR to an authenticated profile."
+                )
 
         if args.cmd == "generate":
             res = await browser.generate(
@@ -50,6 +57,7 @@ async def _run_once(args: argparse.Namespace) -> int:
                 target_count=args.target_count,
                 auto_continue=not args.no_auto_continue,
                 timeout=args.timeout,
+                late_grace=args.late_grace,
             )
         elif args.cmd == "extract":
             res = await browser.extract_history(
@@ -97,6 +105,12 @@ def main(argv: list[str] | None = None) -> int:
     p_gen.add_argument("--target-count", type=int, default=0, help="Auto-continue until N images are saved")
     p_gen.add_argument("--no-auto-continue", action="store_true", help="Disable auto-continue on batched replies")
     p_gen.add_argument("--timeout", type=int, default=90)
+    p_gen.add_argument(
+        "--late-grace",
+        type=float,
+        default=6.0,
+        help="Seconds to keep watching for late extra images after the first reply settles",
+    )
 
     p_ext = sub.add_parser("extract", help="Scroll chat history and download all media")
     add_common(p_ext)

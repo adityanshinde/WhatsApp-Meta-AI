@@ -9,5 +9,8 @@ urls.txt
 qr_test.png
 dist/
 build/
+.venv/
+.wa-profile/
+renders/
 tests/final_test_with_ref_image/output/
 
