@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from wa_meta_ai import MetaAIClient
 from wa_meta_ai.config import Settings
 from wa_meta_ai.extractor import MediaStore, convert_image, sniff_ext
 from wa_meta_ai.server import create_app

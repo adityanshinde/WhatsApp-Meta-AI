@@ -33,12 +33,13 @@ Whatsapp Meta AI/
 ├── src/wa_meta_ai/
 │   ├── __init__.py       # Public Python SDK (MetaAIClient)
 │   ├── config.py         # Settings via env vars / .env (port, profile, timeouts, API key)
-│   ├── browser.py        # Playwright persistent context + optional CDP attach + asyncio.Lock
+│   ├── browser.py        # Playwright persistent context + CDP attach + prompt/completion loop
+│   ├── client.py         # Synchronous Python SDK (MetaAIClient)
 │   ├── extractor.py      # DOM/network media finder, magic-byte sniffer, Pillow converter, SHA-256 store
-│   ├── prompt.py         # Send prompt, detect completion/timeout/rate-limit, collect text + media
 │   ├── jobs.py           # Async job queue + optional webhook dispatcher
-│   ├── server.py         # FastAPI app (REST + SSE + OpenAI-compat endpoint)
-│   └── cli.py            # CLI (`wa-meta-ai serve|generate|extract|qr`)
+│   ├── server.py         # FastAPI app (REST + QR UI + OpenAI-compat endpoint)
+│   ├── mcp_server.py     # FastMCP server for AI agents (wa-meta-ai mcp)
+│   └── cli.py            # CLI (`wa-meta-ai serve|generate|extract|clear|mcp`)
 ├── downloads/            # Extracted media + manifest.json
 ├── wa_profile/           # Persistent Chromium user-data-dir (gitignored)
 ├── tests/
@@ -128,8 +129,8 @@ from wa_meta_ai import MetaAIClient
 with MetaAIClient(profile_dir="./wa_profile") as client:
     client.wait_for_login()
     result = client.generate("Futuristic Tokyo street in rain, anime style", format="png")
-    for item in result.media:
-        print(item.path, item.width, item.height)
+    for item in result["media"]:
+        print(item["path"], item["width"], item["height"])
 ```
 
 ---
