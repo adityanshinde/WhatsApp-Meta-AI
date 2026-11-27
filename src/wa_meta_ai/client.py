@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -24,42 +25,63 @@ class MetaAIClient:
         self,
         profile_dir: str | Path | None = None,
         downloads_dir: str | Path | None = None,
-        cdp_url: str = "",
-        default_format: str = "png",
-        headless: bool = False,
+        cdp_url: str | None = None,
+        default_format: str | None = None,
+        headless: bool | None = None,
+        call_timeout: float | None = 300.0,
     ) -> None:
         self.settings = Settings()
         if profile_dir is not None:
             self.settings.profile_dir = Path(profile_dir)
         if downloads_dir is not None:
             self.settings.downloads_dir = Path(downloads_dir)
-        if cdp_url:
+        if cdp_url is not None:
             self.settings.cdp_url = cdp_url
-        if default_format:
+        if default_format is not None:
             self.settings.default_format = default_format
-        self.settings.headless = headless
+        if headless is not None:
+            self.settings.headless = headless
 
+        self._call_timeout = call_timeout
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._thread.start()
         self._browser = WhatsAppBrowser(self.settings)
         self._started = False
+        self._closed = False
 
-    def _run(self, coro: Any) -> Any:
-        return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
+    def _run(self, coro: Any, timeout: float | None = None) -> Any:
+        if self._closed:
+            raise RuntimeError("MetaAIClient is closed")
+        wait = self._call_timeout if timeout is None else timeout
+        return asyncio.run_coroutine_threadsafe(coro, self._loop).result(timeout=wait)
+
+    def _ensure_started(self) -> None:
+        if self._closed:
+            raise RuntimeError("MetaAIClient is closed")
+        if not self._started:
+            self.start()
 
     def start(self) -> MetaAIClient:
+        if self._closed:
+            raise RuntimeError("MetaAIClient is closed")
         if not self._started:
             self._run(self._browser.start())
             self._started = True
         return self
 
     def close(self) -> None:
-        if self._started:
-            self._run(self._browser.stop())
+        if self._closed:
+            return
+        try:
+            if self._started:
+                self._run(self._browser.stop(), timeout=30.0)
+        finally:
             self._started = False
-        self._loop.call_soon_threadsafe(self._loop.stop)
-        self._thread.join(timeout=3)
+            self._closed = True
+            if self._loop.is_running():
+                self._loop.call_soon_threadsafe(self._loop.stop)
+            self._thread.join(timeout=3)
 
     def __enter__(self) -> MetaAIClient:
         return self.start()
@@ -68,11 +90,11 @@ class MetaAIClient:
         self.close()
 
     def auth_status(self) -> str:
+        self._ensure_started()
         return self._run(self._browser.auth_status())
 
     def wait_for_login(self, timeout: float = 120.0) -> str:
-        import time
-
+        self._ensure_started()
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             st = self.auth_status()
@@ -95,6 +117,7 @@ class MetaAIClient:
         auto_continue: bool = True,
         timeout: int = 120,
     ) -> dict[str, Any]:
+        self._ensure_started()
         return self._run(
             self._browser.generate(
                 prompt=prompt,
@@ -107,7 +130,8 @@ class MetaAIClient:
                 target_count=target_count,
                 auto_continue=auto_continue,
                 timeout=timeout,
-            )
+            ),
+            timeout=max(float(timeout) + 30.0, self._call_timeout or 0.0),
         )
 
     def generate_batch(
@@ -123,6 +147,7 @@ class MetaAIClient:
         clear_after: bool = False,
         timeout: int = 120,
     ) -> dict[str, Any]:
+        self._ensure_started()
         return self._run(
             self._browser.generate_batch(
                 prompts=prompts,
@@ -134,7 +159,8 @@ class MetaAIClient:
                 fmt=format,
                 clear_after=clear_after,
                 timeout=timeout,
-            )
+            ),
+            timeout=max(float(timeout) * len(prompts) + 30.0, self._call_timeout or 0.0),
         )
 
     def extract_history(
@@ -147,6 +173,7 @@ class MetaAIClient:
         output_dir: str = "",
         format: str = "",
     ) -> dict[str, Any]:
+        self._ensure_started()
         return self._run(
             self._browser.extract_history(
                 chat=chat,
@@ -159,4 +186,5 @@ class MetaAIClient:
         )
 
     def clear_chat(self, chat: str = "Meta AI") -> bool:
+        self._ensure_started()
         return self._run(self._browser.clear_chat(chat=chat))

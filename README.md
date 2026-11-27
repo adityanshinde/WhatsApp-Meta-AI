@@ -83,6 +83,16 @@ wa-meta-ai extract --chat "Meta AI" --scrolls 30 --format png
 wa-meta-ai clear
 ```
 
+### Python SDK (`MetaAIClient`)
+```python
+from wa_meta_ai import MetaAIClient
+
+with MetaAIClient() as client:
+    client.wait_for_login()
+    res = client.generate("Cute futuristic robot", name="robot_01", format="png")
+    print(res["media"][0]["path"])
+```
+
 ### OpenAI Python SDK Drop-In
 ```python
 from openai import OpenAI

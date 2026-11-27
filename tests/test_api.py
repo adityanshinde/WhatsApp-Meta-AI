@@ -104,7 +104,71 @@ def test_async_jobs_batch_and_auth() -> None:
             assert len(rm.json()["items"]) == 1
 
 
+def test_meta_ai_client_sdk() -> None:
+    import os
+
+    # 1. Verify env vars are NOT clobbered when default_format/headless are None
+    old_fmt = os.environ.get("WA_DEFAULT_FORMAT")
+    old_hd = os.environ.get("WA_HEADLESS")
+    try:
+        os.environ["WA_DEFAULT_FORMAT"] = "webp"
+        os.environ["WA_HEADLESS"] = "true"
+        c_env = MetaAIClient()
+        assert c_env.settings.default_format == "webp"
+        assert c_env.settings.headless is True
+        c_env.close()
+
+        c_override = MetaAIClient(default_format="jpg", headless=False)
+        assert c_override.settings.default_format == "jpg"
+        assert c_override.settings.headless is False
+        c_override.close()
+    finally:
+        if old_fmt is None:
+            os.environ.pop("WA_DEFAULT_FORMAT", None)
+        else:
+            os.environ["WA_DEFAULT_FORMAT"] = old_fmt
+        if old_hd is None:
+            os.environ.pop("WA_HEADLESS", None)
+        else:
+            os.environ["WA_HEADLESS"] = old_hd
+
+    # 2. Verify context manager, auto-start, delegation, idempotent close, and closed guard
+    c = MetaAIClient()
+    c._browser.start = AsyncMock()
+    c._browser.stop = AsyncMock()
+    c._browser.auth_status = AsyncMock(return_value="READY")
+    c._browser.generate = AsyncMock(return_value={"prompt": "hi", "media": [{"path": "x.png"}]})
+
+    with c as client:
+        assert client.wait_for_login(timeout=5.0) == "READY"
+        res = client.generate("hi", name="x", format="png")
+        assert res["media"][0]["path"] == "x.png"
+    c._browser.start.assert_awaited_once()
+    c._browser.stop.assert_awaited_once()
+    c.close()  # idempotent second close must not raise
+
+    try:
+        c.auth_status()
+        raise AssertionError("Expected RuntimeError after close()")
+    except RuntimeError:
+        pass
+
+    # 3. Verify auto-start when called without `with`
+    c2 = MetaAIClient()
+    c2._browser.start = AsyncMock()
+    c2._browser.stop = AsyncMock(side_effect=RuntimeError("stop boom"))
+    c2._browser.clear_chat = AsyncMock(return_value=True)
+    assert c2.clear_chat() is True
+    c2._browser.start.assert_awaited_once()
+    try:
+        c2.close()
+    except RuntimeError:
+        pass
+    assert c2._closed is True
+
+
 if __name__ == "__main__":
     test_sniff_ext_and_convert()
     test_async_jobs_batch_and_auth()
-    print("All API & extractor tests passed!")
+    test_meta_ai_client_sdk()
+    print("All API, SDK & extractor tests passed!")
