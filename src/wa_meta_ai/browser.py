@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import random
+import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -103,7 +105,17 @@ class WhatsAppBrowser:
                     channel="chrome", **launch_opts
                 )
             except Exception:
-                self._context = await self._pw.chromium.launch_persistent_context(**launch_opts)
+                try:
+                    self._context = await self._pw.chromium.launch_persistent_context(**launch_opts)
+                except Exception as exc:
+                    if "Executable doesn't exist" in str(exc):
+                        await asyncio.to_thread(
+                            subprocess.check_call,
+                            [sys.executable, "-m", "playwright", "install", "chromium"],
+                        )
+                        self._context = await self._pw.chromium.launch_persistent_context(**launch_opts)
+                    else:
+                        raise
 
         assert self._context is not None
         for p in self._context.pages:

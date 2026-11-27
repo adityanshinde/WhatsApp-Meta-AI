@@ -1,6 +1,7 @@
 # WhatsApp Meta AI (`wa-meta-ai`)
 
 <p align="left">
+  <a href="https://pypi.org/project/wa-meta-ai/"><img src="https://img.shields.io/pypi/v/wa-meta-ai" alt="PyPI"></a>
   <a href="https://github.com/adityanshinde/WhatsApp-Meta-AI/actions/workflows/ci.yml"><img src="https://github.com/adityanshinde/WhatsApp-Meta-AI/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
@@ -41,10 +42,9 @@ An open-source **REST API, CLI, Python SDK, and MCP server** for two-way interac
 
 ### 1. Install
 ```bash
-pip install git+https://github.com/adityanshinde/WhatsApp-Meta-AI.git
-playwright install chromium
+pip install wa-meta-ai
 ```
-*(Or clone locally and run `pip install -e .`)*
+*(All Python dependencies install automatically. Uses your existing Google Chrome, or auto-installs Chromium on first launch if needed.)*
 
 ### 2. Start the Server
 ```bash

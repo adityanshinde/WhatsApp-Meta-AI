@@ -87,7 +87,7 @@ def create_app(settings: Settings | None = None, start_browser: bool = True) -> 
             if start_browser:
                 await browser.stop()
 
-    app = FastAPI(title="WhatsApp Meta AI API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="WhatsApp Meta AI API", version="0.1.1", lifespan=lifespan)
 
     def verify_key(
         x_api_key: str = Header(default=""),
