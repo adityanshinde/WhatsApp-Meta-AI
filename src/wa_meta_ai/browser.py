@@ -278,6 +278,7 @@ class WhatsAppBrowser:
         fmt: str,
         prompt: str,
         chat: str,
+        name: str = "",
     ) -> tuple[bool, dict[str, Any]]:
         src = item["src"]
         if src.startswith("https://") or src.startswith("http://"):
@@ -292,6 +293,7 @@ class WhatsAppBrowser:
             prompt=prompt,
             chat=chat,
             source_url=src,
+            name=name,
         )
 
     async def _send_message(self, page: Page, message: str, ref_image: str = "") -> None:
@@ -365,6 +367,7 @@ class WhatsAppBrowser:
         target_fmt: str,
         prompt_label: str,
         ref_image: str = "",
+        name: str = "",
     ) -> tuple[str, list[dict[str, Any]]]:
         """Send one message, wait for reply + media settle, and save new media."""
         since = time.monotonic() - self._last_prompt_ts
@@ -401,7 +404,7 @@ class WhatsAppBrowser:
         reply_text = await page.evaluate(LAST_INCOMING_TEXT_JS)
         saved_media: list[dict[str, Any]] = []
         for item in new_items:
-            is_new, rec = await self._save_item(page, item, store, target_fmt, prompt_label, chat)
+            is_new, rec = await self._save_item(page, item, store, target_fmt, prompt_label, chat, name=name)
             if is_new:
                 saved_media.append(rec)
         return reply_text, saved_media
@@ -416,6 +419,7 @@ class WhatsAppBrowser:
         series: str = "",
         output_dir: str = "",
         ref_image: str = "",
+        name: str = "",
         target_count: int = 0,
         auto_continue: bool = True,
         continue_text: str = "continue",
@@ -434,7 +438,7 @@ class WhatsAppBrowser:
             t0 = time.monotonic()
             store = MediaStore(base_dir, series=series, save_manifest=self.settings.save_manifest)
             reply_text, all_media = await self._send_and_collect(
-                page, prompt, chat, timeout, settle_sec, store, target_fmt, prompt, ref_image=ref_image
+                page, prompt, chat, timeout, settle_sec, store, target_fmt, prompt, ref_image=ref_image, name=name
             )
             rounds = 1
             stagnant = 0
@@ -451,7 +455,7 @@ class WhatsAppBrowser:
 
                 rounds += 1
                 reply_text, batch = await self._send_and_collect(
-                    page, continue_text, chat, timeout, settle_sec, store, target_fmt, prompt
+                    page, continue_text, chat, timeout, settle_sec, store, target_fmt, prompt, name=name
                 )
                 if batch:
                     all_media.extend(batch)

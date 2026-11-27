@@ -56,18 +56,20 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
         output_dir: str = "",
         series: str = "",
         ref_image: str = "",
+        name: str = "",
         format: str = "png",
         target_count: int = 0,
         auto_continue: bool = True,
         chat: str = "Meta AI",
     ) -> dict[str, Any]:
-        """Send a prompt (with optional reference image) to Meta AI and save images to output_dir."""
+        """Send a prompt (with optional reference image & custom filename prefix) to Meta AI."""
         payload = {
             "prompt": prompt,
             "chat": chat,
             "series": series,
             "output_dir": output_dir,
             "ref_image": ref_image,
+            "name": name,
             "format": format,
             "target_count": target_count,
             "auto_continue": auto_continue,
@@ -81,6 +83,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
             series=series,
             output_dir=output_dir,
             ref_image=ref_image,
+            name=name,
             fmt=format,
             target_count=target_count,
             auto_continue=auto_continue,

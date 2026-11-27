@@ -45,6 +45,7 @@ async def _run_once(args: argparse.Namespace) -> int:
                 chat=args.chat,
                 series=args.series,
                 ref_image=args.ref,
+                name=args.name,
                 fmt=args.format,
                 target_count=args.target_count,
                 auto_continue=not args.no_auto_continue,
@@ -92,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     p_gen.add_argument("--chat", default="Meta AI")
     p_gen.add_argument("--series", default="", help="Optional subfolder under downloads/")
     p_gen.add_argument("--ref", default="", help="Optional reference image path to attach")
+    p_gen.add_argument("--name", default="", help="Optional custom filename prefix (e.g. hero_scene)")
     p_gen.add_argument("--target-count", type=int, default=0, help="Auto-continue until N images are saved")
     p_gen.add_argument("--no-auto-continue", action="store_true", help="Disable auto-continue on batched replies")
     p_gen.add_argument("--timeout", type=int, default=90)

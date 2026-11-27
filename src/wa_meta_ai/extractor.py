@@ -154,6 +154,7 @@ class MediaStore:
         prompt: str = "",
         chat: str = "Meta AI",
         source_url: str = "",
+        name: str = "",
     ) -> tuple[bool, dict[str, Any]]:
         """Save media bytes with deduplication and optional image format conversion."""
         digest = hashlib.sha256(raw).hexdigest()
@@ -200,7 +201,18 @@ class MediaStore:
             ext = sniff_ext(raw, mime, kind)
 
         self.counter += 1
-        filename = f"meta_ai_{self.counter:04d}_{digest[:8]}{ext}"
+        safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_")).strip("_-")
+        if safe_name:
+            candidate = f"{safe_name}{ext}"
+            if (self.out_dir / candidate).exists():
+                idx = 1
+                while (self.out_dir / f"{safe_name}_{idx:02d}{ext}").exists():
+                    idx += 1
+                filename = f"{safe_name}_{idx:02d}{ext}"
+            else:
+                filename = candidate
+        else:
+            filename = f"meta_ai_{self.counter:04d}_{digest[:8]}{ext}"
         dest = (self.out_dir / filename).resolve()
         dest.write_bytes(raw_out)
 

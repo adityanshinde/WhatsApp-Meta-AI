@@ -40,6 +40,12 @@ def test_sniff_ext_and_convert() -> None:
         assert dup["url"] == rec["url"]
         assert dup["width"] == 64 and dup["height"] == 48
 
+        # Custom filename support
+        is_n1, r1 = s2.save_media(_make_webp(32, 32), target_format="png", name="hero_scene")
+        assert is_n1 and r1["filename"] == "hero_scene.png"
+        is_n2, r2 = s2.save_media(_make_webp(40, 40), target_format="png", name="hero_scene")
+        assert is_n2 and r2["filename"] == "hero_scene_01.png"
+
 
 def test_async_jobs_batch_and_auth() -> None:
     webp = _make_webp(32, 32)

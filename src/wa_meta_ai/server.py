@@ -24,6 +24,7 @@ class GenerateRequest(BaseModel):
     series: str = ""
     output_dir: str = ""
     ref_image: str = ""
+    name: str = ""
     format: str = "png"
     target_count: int = Field(default=0, ge=0, le=200)
     auto_continue: bool = True
@@ -41,6 +42,7 @@ class BatchGenerateRequest(BaseModel):
     series: str = ""
     output_dir: str = ""
     ref_image: str = ""
+    name: str = ""
     format: str = "png"
     clear_after: bool = False
     timeout: int = Field(default=90, ge=10, le=300)
@@ -202,6 +204,7 @@ def create_app(settings: Settings | None = None, start_browser: bool = True) -> 
                     series=body.series,
                     output_dir=body.output_dir,
                     ref_image=body.ref_image,
+                    name=body.name,
                     target_count=body.target_count,
                     auto_continue=body.auto_continue,
                     continue_text=body.continue_text,
@@ -221,6 +224,7 @@ def create_app(settings: Settings | None = None, start_browser: bool = True) -> 
                 series=body.series,
                 output_dir=body.output_dir,
                 ref_image=body.ref_image,
+                name=body.name,
                 target_count=body.target_count,
                 auto_continue=body.auto_continue,
                 continue_text=body.continue_text,
