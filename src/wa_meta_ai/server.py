@@ -42,7 +42,7 @@ class BatchGenerateRequest(BaseModel):
     series: str = ""
     output_dir: str = ""
     ref_image: str = ""
-    name: str = ""
+    names: list[str] = Field(default_factory=list)
     format: str = "png"
     clear_after: bool = False
     timeout: int = Field(default=90, ge=10, le=300)
@@ -250,6 +250,7 @@ def create_app(settings: Settings | None = None, start_browser: bool = True) -> 
                     series=body.series,
                     output_dir=body.output_dir,
                     ref_image=body.ref_image,
+                    names=body.names,
                     fmt=body.format,
                     clear_after=body.clear_after,
                     timeout=body.timeout,
@@ -266,6 +267,7 @@ def create_app(settings: Settings | None = None, start_browser: bool = True) -> 
                 series=body.series,
                 output_dir=body.output_dir,
                 ref_image=body.ref_image,
+                names=body.names,
                 fmt=body.format,
                 clear_after=body.clear_after,
                 timeout=body.timeout,

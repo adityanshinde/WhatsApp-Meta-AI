@@ -482,6 +482,7 @@ class WhatsAppBrowser:
         series: str = "",
         output_dir: str = "",
         ref_image: str = "",
+        names: list[str] | None = None,
         fmt: str = "",
         clear_after: bool = False,
         timeout: int = 90,
@@ -492,6 +493,7 @@ class WhatsAppBrowser:
         results: list[dict[str, Any]] = []
         all_media: list[dict[str, Any]] = []
         for idx, p in enumerate(prompts):
+            item_name = names[idx] if names and idx < len(names) else ""
             res = await self.generate(
                 prompt=p,
                 chat=chat,
@@ -501,6 +503,7 @@ class WhatsAppBrowser:
                 series=series,
                 output_dir=output_dir,
                 ref_image=ref_image if idx == 0 else "",
+                name=item_name,
                 auto_continue=False,
             )
             results.append({"prompt": p, "text": res["text"], "count": len(res["media"])})

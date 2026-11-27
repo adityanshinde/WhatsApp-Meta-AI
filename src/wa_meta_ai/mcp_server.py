@@ -27,7 +27,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
     async def _try_http(method: str, path: str, json_body: dict[str, Any] | None = None) -> dict[str, Any] | None:
         headers = {"X-API-Key": cfg.api_key} if cfg.api_key else {}
         try:
-            async with httpx.AsyncClient(base_url=base_url, timeout=180.0, headers=headers) as client:
+            async with httpx.AsyncClient(base_url=base_url, timeout=600.0, headers=headers) as client:
                 r = await client.request(method, path, json=json_body)
                 if r.status_code < 400:
                     return r.json()
@@ -60,6 +60,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
         format: str = "png",
         target_count: int = 0,
         auto_continue: bool = True,
+        timeout: int = 120,
         chat: str = "Meta AI",
     ) -> dict[str, Any]:
         """Send a prompt (with optional reference image & custom filename prefix) to Meta AI."""
@@ -73,6 +74,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
             "format": format,
             "target_count": target_count,
             "auto_continue": auto_continue,
+            "timeout": timeout,
         }
         if res := await _try_http("POST", "/generate", payload):
             return res
@@ -87,6 +89,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
             fmt=format,
             target_count=target_count,
             auto_continue=auto_continue,
+            timeout=timeout,
         )
 
     @mcp.tool()
@@ -95,19 +98,23 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
         output_dir: str = "",
         series: str = "",
         ref_image: str = "",
+        names: list[str] | None = None,
         format: str = "png",
         clear_after: bool = False,
+        timeout: int = 120,
         chat: str = "Meta AI",
     ) -> dict[str, Any]:
-        """Run a list of prompts sequentially into output_dir, optionally clearing chat after."""
+        """Run prompts sequentially into output_dir (with optional per-prompt names). For 3+ prompts, prefer calling generate_images one by one to avoid MCP client timeouts."""
         payload = {
             "prompts": prompts,
             "chat": chat,
             "series": series,
             "output_dir": output_dir,
             "ref_image": ref_image,
+            "names": names or [],
             "format": format,
             "clear_after": clear_after,
+            "timeout": timeout,
             "async_mode": False,
         }
         if res := await _try_http("POST", "/generate/batch", payload):
@@ -119,8 +126,10 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
             series=series,
             output_dir=output_dir,
             ref_image=ref_image,
+            names=names,
             fmt=format,
             clear_after=clear_after,
+            timeout=timeout,
         )
 
     @mcp.tool()
