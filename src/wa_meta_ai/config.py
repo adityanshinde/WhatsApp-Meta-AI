@@ -14,9 +14,6 @@ load_dotenv()
 def _default_profile_dir() -> Path:
     if env := os.getenv("WA_PROFILE_DIR"):
         return Path(env).expanduser()
-    local = Path("wa_profile")
-    if local.exists():
-        return local.resolve()
     return Path.home() / ".wa-meta-ai" / "profile"
 
 

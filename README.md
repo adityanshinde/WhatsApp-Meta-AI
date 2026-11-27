@@ -55,7 +55,7 @@ pip install wa-meta-ai
 wa-meta-ai serve
 ```
 - Open **`http://127.0.0.1:8000/`** (or the opened Chrome window) and scan the WhatsApp Web QR code once.
-- Your session persists in `wa_profile/` (local `./wa_profile` if present, otherwise `~/.wa-meta-ai/profile`).
+- Your session persists in **`~/.wa-meta-ai/profile`** (shared across CLI, REST API, Cursor, Antigravity, and Claude Desktop so you only scan QR once).
 - Interactive API docs: **`http://127.0.0.1:8000/docs`**
 
 ---
