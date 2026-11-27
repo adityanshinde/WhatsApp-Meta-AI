@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wa-meta-ai"
-version = "0.1.4"
+version = "0.1.5"
 description = "Open-source REST API, Python SDK, CLI, and MCP server for WhatsApp Meta AI image generation & media extraction"
 readme = "README.md"
 authors = [{ name = "Aditya Shinde" }]
@@ -41,6 +41,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "httpx>=0.27.0",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "build>=1.0"]
 
 [project.scripts]
 wa-meta-ai = "wa_meta_ai.cli:main"

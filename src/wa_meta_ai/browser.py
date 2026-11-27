@@ -140,8 +140,26 @@ class WhatsAppBrowser:
             await self._pw.stop()
 
     async def _require_page(self) -> Page:
-        if self._page is None:
-            raise RuntimeError("Browser not started")
+        """Return an active WhatsApp Web page, recovering automatically if the tab closed."""
+        if self._context is None:
+            await self.start()
+        assert self._context is not None
+
+        if self._page is None or self._page.is_closed():
+            for p in self._context.pages:
+                if not p.is_closed() and "web.whatsapp.com" in p.url:
+                    self._page = p
+                    return self._page
+            try:
+                self._page = await self._context.new_page()
+                await self._page.goto("https://web.whatsapp.com", wait_until="domcontentloaded")
+                await self._page.wait_for_selector(
+                    "#pane-side, #main, canvas[aria-label*='QR'], [data-ref]", timeout=12_000
+                )
+            except Exception:
+                await self.stop()
+                await self.start()
+        assert self._page is not None
         return self._page
 
     async def debug_ui(self) -> dict[str, Any]:
@@ -162,8 +180,12 @@ class WhatsAppBrowser:
         )
 
     async def auth_status(self) -> str:
-        """Return READY, NEEDS_QR, or DISCONNECTED (auto-dismissing post-login modals)."""
+        """Return READY, NEEDS_QR, or DISCONNECTED (auto-dismissing modals & 'Use here')."""
         page = await self._require_page()
+        use_here = page.locator('button:has-text("Use here")').first
+        if await use_here.count() > 0 and await use_here.is_visible():
+            await use_here.click()
+            await page.wait_for_timeout(1200)
         if await page.locator("#pane-side, #main").count() > 0:
             await self._dismiss_dialogs(page)
             return "READY"

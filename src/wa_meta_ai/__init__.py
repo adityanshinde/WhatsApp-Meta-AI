@@ -5,4 +5,4 @@ from .config import Settings
 from .extractor import MediaStore, convert_image, sniff_ext
 
 __all__ = ["MediaStore", "MetaAIClient", "Settings", "convert_image", "sniff_ext"]
-__version__ = "0.1.4"
+__version__ = "0.1.5"

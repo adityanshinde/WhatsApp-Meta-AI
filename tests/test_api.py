@@ -167,8 +167,36 @@ def test_meta_ai_client_sdk() -> None:
     assert c2._closed is True
 
 
+def test_browser_auto_recovery() -> None:
+    import asyncio
+    from unittest.mock import MagicMock
+    from wa_meta_ai.browser import WhatsAppBrowser
+
+    b = WhatsAppBrowser(Settings())
+    closed_page = MagicMock()
+    closed_page.is_closed.return_value = True
+
+    fresh_page = MagicMock()
+    fresh_page.is_closed.return_value = False
+    fresh_page.url = "https://web.whatsapp.com/"
+    fresh_page.goto = AsyncMock()
+    fresh_page.wait_for_selector = AsyncMock()
+
+    ctx = MagicMock()
+    ctx.pages = [closed_page]
+    ctx.new_page = AsyncMock(return_value=fresh_page)
+
+    b._context = ctx
+    b._page = closed_page
+
+    recovered = asyncio.run(b._require_page())
+    assert recovered is fresh_page
+    fresh_page.goto.assert_awaited_once()
+
+
 if __name__ == "__main__":
     test_sniff_ext_and_convert()
     test_async_jobs_batch_and_auth()
     test_meta_ai_client_sdk()
+    test_browser_auto_recovery()
     print("All API, SDK & extractor tests passed!")
