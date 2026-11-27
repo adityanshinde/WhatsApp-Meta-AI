@@ -63,7 +63,7 @@ def create_mcp_server(settings: Settings | None = None) -> FastMCP:
         timeout: int = 120,
         chat: str = "Meta AI",
     ) -> dict[str, Any]:
-        """Send a prompt (with optional reference image & custom filename prefix) to Meta AI."""
+        """Send a prompt (start with 'Generate an image of ...' for reliable image output) to Meta AI."""
         payload = {
             "prompt": prompt,
             "chat": chat,

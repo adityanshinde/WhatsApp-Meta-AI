@@ -29,8 +29,13 @@ COLLECT_CHAT_MEDIA_JS = """
         if (alt === 'Meta AI generated image') return true;
         return s.includes('mmg.whatsapp.net') || s.includes('cdn.whatsapp.net') || s.includes('fna.whatsapp.net');
     };
+    const isOutgoing = (el) => {
+        if (el.closest('.message-out, [data-id^="true_"]')) return true;
+        const row = el.closest('[data-testid^="conv-msg-"], [role="row"]');
+        return Boolean(row && row.querySelector('span[aria-label="You:"], [data-icon="msg-check"], [data-icon="msg-dblcheck"], [data-icon="msg-time"]'));
+    };
     for (const el of root.querySelectorAll('img, video')) {
-        if (incomingOnly && (el.closest('.message-out') || el.closest('[data-id^="true_"]'))) continue;
+        if (incomingOnly && isOutgoing(el)) continue;
         const isVideo = el.tagName === 'VIDEO';
         const src = isVideo
             ? (el.currentSrc || el.src || (el.querySelector('source') && el.querySelector('source').src) || '')
@@ -55,18 +60,25 @@ LAST_INCOMING_TEXT_JS = """
 () => {
     const main = document.querySelector('#main');
     if (!main) return '';
-    const msgs = [...main.querySelectorAll('.message-in, [data-id^="false_"]')];
+    const msgs = [...main.querySelectorAll('[data-testid^="conv-msg-"], .message-in, [data-id^="false_"]')].filter(m =>
+        !m.matches('.message-out, [data-id^="true_"]') &&
+        !m.querySelector('span[aria-label="You:"], [data-icon="msg-check"], [data-icon="msg-dblcheck"], [data-icon="msg-time"]')
+    );
     if (!msgs.length) return '';
     const last = msgs[msgs.length - 1];
-    const spans = [...last.querySelectorAll('span.selectable-text')];
-    return spans.map(s => s.innerText).join('\\n').trim();
+    const nodes = [...last.querySelectorAll('.selectable-text')];
+    return nodes.map(s => s.innerText).join('\\n').trim();
 }
 """
 
 COUNT_INCOMING_MSGS_JS = """
 () => {
     const main = document.querySelector('#main');
-    return main ? main.querySelectorAll('.message-in, [data-id^="false_"]').length : 0;
+    if (!main) return 0;
+    return [...main.querySelectorAll('[data-testid^="conv-msg-"], .message-in, [data-id^="false_"]')].filter(m =>
+        !m.matches('.message-out, [data-id^="true_"]') &&
+        !m.querySelector('span[aria-label="You:"], [data-icon="msg-check"], [data-icon="msg-dblcheck"], [data-icon="msg-time"]')
+    ).length;
 }
 """
 
