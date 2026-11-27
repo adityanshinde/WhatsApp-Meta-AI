@@ -1,6 +1,7 @@
 # WhatsApp Meta AI (`wa-meta-ai`)
 
 <p align="left">
+  <a href="https://github.com/adityanshinde/WhatsApp-Meta-AI/actions/workflows/ci.yml"><img src="https://github.com/adityanshinde/WhatsApp-Meta-AI/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
   <img src="https://img.shields.io/badge/FastAPI-REST%20API-009688" alt="FastAPI">

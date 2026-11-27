@@ -5,10 +5,32 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wa-meta-ai"
 version = "0.1.0"
-description = "Open-source REST API, Python SDK, and CLI for WhatsApp Meta AI image generation & extraction"
+description = "Open-source REST API, Python SDK, CLI, and MCP server for WhatsApp Meta AI image generation & media extraction"
 readme = "README.md"
+authors = [{ name = "Aditya Shinde" }]
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+keywords = [
+    "whatsapp",
+    "meta-ai",
+    "whatsapp-web",
+    "image-generation",
+    "image-to-image",
+    "playwright",
+    "fastapi",
+    "mcp",
+    "ai-agents",
+    "openai-compatible",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Multimedia :: Graphics",
+]
 dependencies = [
     "playwright>=1.45.0",
     "fastapi>=0.110.0",
